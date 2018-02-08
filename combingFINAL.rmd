@@ -1,0 +1,133 @@
+---
+title: "Untitled"
+author: "kat"
+date: "February 4, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## dad's function
+```{r}
+
+
+ngram_merge <- function(s1, s2, cols, to) {
+  ls1 <- readRDS(s1)
+  ls2 <- readRDS(s2)
+  combined <- rbind(ls1, ls2)
+  agr <- ddply(combined, cols, numcolwise(sum))
+  saveRDS(arg, "")
+}
+
+
+```
+
+```{r}
+
+a <- c("the cat is", "the ball rolls", "kat is high", "hello my name")
+b <- c("meowing", "far", "again", "kat")
+c <- c(4, 5, 10, 11)
+d <- c("the cat is", "the ball rolls", "kat is high", "hello my name", "the dog goes")
+e <- c("sleeping", "far", "again", "kat", "home")
+f <- c(4, 5, 10, 11, 1)
+one <- data.frame(a, b, c)
+
+two <- data.frame(d, e, f)
+
+colnames(two) <- c("a", "b", "c")
+both <- rbind(one, two)
+
+library(dplyr)
+
+print(both %>% group_by(a,b) %>% count(c) %>% mutate(count=n*c))
+
+###### for larger files
+
+## get rid of anything < 4  
+#together2 <- both %>%filter(count>=4)
+
+
+## arrange in descending order? 
+###or maybe I want to do alpha order?
+#arrange(together2, desc(count)
+library(data.table)
+# DT[i,j,by]
+# i rows, calculate j, groupby 
+
+both <- data.table(both)
+both
+#both[, .(.N), by=list(a, b)]
+both[, .(count=sum(c)), by=list(a, b)]
+        
+
+```
+
+# Combining All N-grams into 1
+```{r}
+#rm(list=setdiff(ls(), c("blogtoks")))
+rm(list=ls())
+news1 <- readRDS("uniblogsamp_news_1.rds")
+news2 <- readRDS("uniblogsamp_news_2.rds")
+news3 <- readRDS("uniblogsamp_news_3.rds")
+
+twitter2 <- readRDS("uniblogsamp_twitter_2.rds")
+twitter3 <- readRDS("uniblogsamp_twitter_3.rds")
+twitter4 <- readRDS("uniblogsamp_twitter_4.rds")
+twitter5 <- readRDS("uniblogsamp_twitter_5.rds")
+allngrams<- rbind(news1, news2, news3, twitter2, twitter3, twitter4, twitter5)
+
+rm(list=setdiff(ls(), c("allngrams")))
+gc()
+#allngrams <- readRDS("allngramsformerging.rds")
+
+```
+```{r}
+
+library(data.table)
+allngrams <- data.table(allngrams)
+allngrams <- allngrams[, .(count=sum(count)), by=list(unigram)]
+
+#head(allngrams)
+#library(dplyr)
+#allngrams2 <- allngrams %>% group_by(previous,fivegram_5) %>% count(count) %>% mutate(count=n*count)
+
+#allngrams
+allngrams <- allngrams[count>=4,]  # cut down to counts >= 4
+nrow(allngrams)
+saveRDS(allngrams, "Munigrams.rds")
+
+#saveRDS(trigram_split_df, file="triblogsamp_twitter_2.rds", ascii=FALSE)
+
+```
+
+```{r}
+fivegram_split_df
+unigram_count_dt
+```
+
+########## didn't do
+
+# format the column names for printing
+```{r}
+
+unigram_count_dt <- readRDS("./Capstone/Munigrams.rds")
+bigram_split_df <- readRDS("./Capstone/Mbigrams.rds")
+trigram_split_df  <- readRDS("./Capstone/Mtrigrams.rds")
+fourgram_split_df <- readRDS("./Capstone/Mfourgrams.rds")
+fivegram_split_df<- readRDS("./Capstone/Mfivegrams.rds")
+
+colnames(fivegram_split_df) <- c("previous", "prediction", "likelihood")
+colnames(fourgram_split_df) <- c("previous", "prediction", "likelihood")
+colnames(trigram_split_df) <- c("previous", "prediction", "likelihood")
+colnames(bigram_split_df) <- c("previous", "prediction", "likelihood")
+colnames(unigram_split_df) <- c("previous", "prediction", "likelihood")
+
+saveRDS(allngrams, "Munigrams.rds")
+
+
+```
+
+
